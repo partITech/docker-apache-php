@@ -1,0 +1,42 @@
+version: "3.8"
+services:
+  php-8.1:
+    image: 'devpartitech/php:8.1-apache'
+    ports:
+      - "9081:80"
+    volumes:
+      - "./www/:/var/www/public"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+  php-8.0:
+    image: 'devpartitech/php:8.0-apache'
+    ports:
+      - "9080:80"
+    volumes:
+      - "./www/:/var/www/public"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+  php-7.4:
+    image: 'devpartitech/php:7.4-apache'
+    ports:
+      - "9074:80"
+    volumes:
+      - "./www/:/var/www/public"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+  php-7.3:
+    image: 'devpartitech/php:7.3-apache'
+    ports:
+      - "9073:80"
+    volumes:
+      - "./www/:/var/www/public"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+  php-7.2:
+    image: 'devpartitech/php:7.2-apache'
+    ports:
+      - "9072:80"
+    volumes:
+      - "./www/:/var/www/public"
+    extra_hosts:
+      - host.docker.internal:host-gateway
