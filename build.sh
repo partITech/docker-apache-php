@@ -20,7 +20,7 @@ makeVersion () {
   --squash --compress \
   --no-cache .
   ## Push to personnal repo on docker.io
-  ##docker push devpartitech/php:"${PHP_VERSION}"-apache
+  docker push devpartitech/php:"${PHP_VERSION}"-apache
 }
 
 PHP_VERSIONS=(7.2 7.3 7.4 8.0 8.1)

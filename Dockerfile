@@ -83,7 +83,7 @@ RUN apt-get update \
         bash \
         postgresql-client \
         libwebp-dev \
-        gearman-tools libgearman-dev gearman gearman-job-server\
+        gearman-tools libgearman-dev gearman gearman-job-server \
     && ln -s /usr/lib/x86_64-linux-gnu/libldap.so /usr/lib/libldap.so \
     && ln -s /usr/lib/x86_64-linux-gnu/liblber.so /usr/lib/liblber.so \
     && ln -s /usr/include/x86_64-linux-gnu/gmp.h /usr/include/gmp.h
@@ -137,7 +137,7 @@ RUN set -x \
     && phpize \
     && sed -ri 's@^ *test +"\$PHP_.*" *= *"no" *&& *PHP_.*=yes *$@#&@g' configure \
     && ./configure --with-unixODBC=shared,/usr \
-    && docker-php-ext-install mysqli bcmath intl xml pdo_mysql pgsql pdo_sqlite zip dom session opcache curl bz2 iconv calendar exif \
+    && docker-php-ext-install mysqli bcmath intl xml pdo_mysql pgsql pdo_sqlite zip dom session opcache curl bz2 iconv calendar exif xsl\
     && pecl install apcu && docker-php-ext-enable apcu \
     && pecl install imagick && docker-php-ext-enable  imagick
 
@@ -156,12 +156,27 @@ RUN set -eux; \
 
 
 
-RUN git clone -b master https://github.com/wcgallego/pecl-gearman.git /tmp/php-gearman/ \
-	&& cd /tmp/php-gearman/ \
-	&& phpize \
-	&& ./configure \
-	&& make install \
-	&& docker-php-ext-enable gearman
+RUN set -eux; \
+    if [[ $PHP_VERSION == 7.1.* || $PHP_VERSION == 7.2.* || $PHP_VERSION == 7.3.*  || $PHP_VERSION == 7.4.* ]]; then \
+        git clone -b master https://github.com/wcgallego/pecl-gearman.git /tmp/php-gearman/ \
+        	&& cd /tmp/php-gearman/ \
+        	&& phpize \
+        	&& ./configure \
+        	&& make \
+        	&& make install \
+        	&& docker-php-ext-enable gearman; \
+	fi
+
+RUN set -eux; \
+    if [[ $PHP_VERSION == 8.1.* || $PHP_VERSION == 8.0.* ]]; then \
+        git clone -b master https://github.com/php/pecl-networking-gearman.git /tmp/php-gearman/ \
+        	&& cd /tmp/php-gearman/ \
+        	&& phpize \
+        	&& ./configure \
+        	&& make \
+        	&& make install \
+        	&& docker-php-ext-enable gearman; \
+	fi
 
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 RUN chmod +x /usr/local/bin/install-php-extensions && \
@@ -196,7 +211,8 @@ RUN composer global require squizlabs/php_codesniffer
 RUN composer global require pear/archive_tar
 RUN composer global require friendsofphp/php-cs-fixer --with-all-dependencies
 RUN composer global require codeception/codeception
-RUN composer global require sensiolabs/security-checker
+RUN wget -O /usr/local/bin/local-php-security-checker https://github.com/fabpot/local-php-security-checker/releases/download/v2.0.6/local-php-security-checker_2.0.6_linux_386
+RUN chmod +x /usr/local/bin/local-php-security-checker
 RUN composer global require phpmetrics/phpmetrics
 RUN composer global require phpstan/phpstan
 RUN composer global require vimeo/psalm
@@ -215,7 +231,7 @@ RUN chmod +x $PHARS_DIR/phpDocumentor
 #    extra_hosts:
 #      - host.docker.internal:host-gateway
 
-## entrypoint for npm.
+# entrypoint for npm.
 RUN touch ${NPM_ENTRYPOINT}
 RUN echo "#!/bin/sh" > ${NPM_ENTRYPOINT}
 RUN echo "npm install && npm run serve" >> ${NPM_ENTRYPOINT}
