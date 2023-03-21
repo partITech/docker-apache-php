@@ -83,6 +83,7 @@ RUN apt-get update \
         bash \
         postgresql-client \
         libwebp-dev \
+        libonig-dev \
         gearman-tools libgearman-dev gearman gearman-job-server \
     && ln -s /usr/lib/x86_64-linux-gnu/libldap.so /usr/lib/libldap.so \
     && ln -s /usr/lib/x86_64-linux-gnu/liblber.so /usr/lib/liblber.so \
@@ -137,7 +138,7 @@ RUN set -x \
     && phpize \
     && sed -ri 's@^ *test +"\$PHP_.*" *= *"no" *&& *PHP_.*=yes *$@#&@g' configure \
     && ./configure --with-unixODBC=shared,/usr \
-    && docker-php-ext-install mysqli bcmath intl xml pdo_mysql pgsql pdo_sqlite zip dom session opcache curl bz2 iconv calendar exif xsl\
+    && docker-php-ext-install mysqli bcmath intl xml pdo_mysql pgsql pdo_pgsql pdo_sqlite zip dom session opcache curl bz2 iconv calendar exif xsl mbstring \
     && pecl install apcu && docker-php-ext-enable apcu \
     && pecl install imagick && docker-php-ext-enable  imagick
 
@@ -149,7 +150,7 @@ RUN set -eux; \
     fi
 
 RUN set -eux; \
-    if [[ $PHP_VERSION == 7.4.* ]]; then \
+    if [[ $PHP_VERSION == 7.4.*  || $PHP_VERSION == 8.0.* || $PHP_VERSION == 8.1.* || $PHP_VERSION == 8.2.*  ]]; then \
       docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
         && docker-php-ext-install gd; \
     fi
@@ -168,7 +169,7 @@ RUN set -eux; \
 	fi
 
 RUN set -eux; \
-    if [[ $PHP_VERSION == 8.1.* || $PHP_VERSION == 8.0.* ]]; then \
+    if [[ $PHP_VERSION == 8.0.* || $PHP_VERSION == 8.1.* || $PHP_VERSION == 8.2.*  ]]; then \
         git clone -b master https://github.com/php/pecl-networking-gearman.git /tmp/php-gearman/ \
         	&& cd /tmp/php-gearman/ \
         	&& phpize \
@@ -194,7 +195,8 @@ RUN   mkdir -p $NVM_DIR && \
       nvm install 16 && \
       nvm install 17 && \
       nvm install 18 && \
-      nvm alias default 18 && \
+      nvm install 19 && \
+      nvm alias default 19 && \
       nvm use default && \
       npm install -g npm@9.1.2 && \
       npm install gulp bower -g && \
@@ -210,9 +212,9 @@ RUN composer global require phpmd/phpmd
 RUN composer global require squizlabs/php_codesniffer
 RUN composer global require pear/archive_tar
 RUN composer global require friendsofphp/php-cs-fixer --with-all-dependencies
-RUN composer global require codeception/codeception
+RUN #composer global require codeception/codeception
 RUN wget -O /usr/local/bin/local-php-security-checker https://github.com/fabpot/local-php-security-checker/releases/download/v2.0.6/local-php-security-checker_2.0.6_linux_386
-RUN chmod +x /usr/local/bin/local-php-security-checker
+#RUN chmod +x /usr/local/bin/local-php-security-checker
 RUN composer global require phpmetrics/phpmetrics
 RUN composer global require phpstan/phpstan
 RUN composer global require vimeo/psalm
@@ -243,6 +245,8 @@ RUN echo "#!/bin/sh" > ${YARN_ENTRYPOINT}
 RUN echo "yarn install && yarn watch" >> ${YARN_ENTRYPOINT}
 RUN chmod +x ${YARN_ENTRYPOINT}
 
+RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.deb.sh' | bash && \
+    apt install symfony-cli
 
 # the user we're applying this too (otherwise it most likely install for root)
 USER $USER_NAME

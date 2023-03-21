@@ -8,7 +8,7 @@ makeVersion () {
     DEBIAN_VERSION=apache-buster
   fi
 
-  if [[ $PHP_VERSION == 8.1 ]]; then
+  if [[ $PHP_VERSION == 8.1 || $PHP_VERSION == 8.2 ]]; then
     XDEBUG_VERSION=3.2.0
   fi
 
@@ -23,8 +23,7 @@ makeVersion () {
   docker push devpartitech/php:"${PHP_VERSION}"-apache
 }
 
-PHP_VERSIONS=(7.2 7.3 7.4 8.0 8.1)
-
+PHP_VERSIONS=(7.2 7.3 7.4 8.0 8.1 8.2)
 for PHP_VERSION in "${PHP_VERSIONS[@]}"
 do
 	makeVersion $PHP_VERSION
