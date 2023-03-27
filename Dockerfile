@@ -270,5 +270,8 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
     -p https://github.com/zsh-users/zsh-completions \
     && mkdir /root/.ssh
 
+RUN apt-get -y  install ruby && gem install bundler && gem install capistrano
+
+
 RUN usermod -u 1000 www-data
 RUN usermod -G staff www-data
