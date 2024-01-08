@@ -35,6 +35,7 @@ RUN sed -ri -e 's!Listen 80!Listen ${APACHE_PORT}!g' /etc/apache2/ports.conf
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         apt-utils \
+        bc \
         zsh \
     	libzip-dev \
         libpng-dev \
@@ -84,11 +85,11 @@ RUN apt-get update \
         postgresql-client \
         libwebp-dev \
         libonig-dev \
+        chromium \
         gearman-tools libgearman-dev gearman gearman-job-server \
     && ln -s /usr/lib/x86_64-linux-gnu/libldap.so /usr/lib/libldap.so \
     && ln -s /usr/lib/x86_64-linux-gnu/liblber.so /usr/lib/liblber.so \
     && ln -s /usr/include/x86_64-linux-gnu/gmp.h /usr/include/gmp.h
-
 
 # Installation de composer
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
@@ -150,7 +151,7 @@ RUN set -eux; \
     fi
 
 RUN set -eux; \
-    if [[ $PHP_VERSION == 7.4.*  || $PHP_VERSION == 8.0.* || $PHP_VERSION == 8.1.* || $PHP_VERSION == 8.2.*  ]]; then \
+    if [[ $PHP_VERSION == 7.4.*  || $PHP_VERSION == 8.0.* || $PHP_VERSION == 8.1.* || $PHP_VERSION == 8.2.*  || $PHP_VERSION == 8.3.*  ]]; then \
       docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
         && docker-php-ext-install gd; \
     fi
@@ -169,7 +170,7 @@ RUN set -eux; \
 	fi
 
 RUN set -eux; \
-    if [[ $PHP_VERSION == 8.0.* || $PHP_VERSION == 8.1.* || $PHP_VERSION == 8.2.*  ]]; then \
+    if [[ $PHP_VERSION == 8.0.* || $PHP_VERSION == 8.1.* || $PHP_VERSION == 8.2.*  || $PHP_VERSION == 8.3.*  ]]; then \
         git clone -b master https://github.com/php/pecl-networking-gearman.git /tmp/php-gearman/ \
         	&& cd /tmp/php-gearman/ \
         	&& phpize \
@@ -188,17 +189,12 @@ RUN chmod +x /usr/local/bin/install-php-extensions && \
 ENV NVM_DIR=/usr/local/nvm
 RUN   mkdir -p $NVM_DIR && \
       curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash && \
-      source $NVM_DIR/nvm.sh &&\
-      nvm install 13 && \
-      nvm install 14 && \
-      nvm install 15 && \
-      nvm install 16 && \
-      nvm install 17 && \
-      nvm install 18 && \
+      source $NVM_DIR/nvm.sh && \
       nvm install 19 && \
-      nvm alias default 19 && \
+      nvm install 20 && \
+      nvm alias default 20 && \
       nvm use default && \
-      npm install -g npm@9.1.2 && \
+      npm install -g npm@9.6.6 && \
       npm install gulp bower -g && \
       npm install --global yarn && \
       npm install -g @vue/cli
@@ -259,18 +255,7 @@ RUN cd /tmp/ && git clone https://github.com/powerline/fonts.git \
     && cd fonts && ./install.sh \
     && cd /tmp && rm -Rf /tmp/fonts
 
-# inatall a viual theme.
-RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v1.1.2/zsh-in-docker.sh)" -- \
-#    -t https://github.com/denysdovhan/spaceship-prompt \
-    -a 'SPACESHIP_PROMPT_ADD_NEWLINE="false"' \
-    -a 'SPACESHIP_PROMPT_SEPARATE_LINE="false"' \
-    -p git \
-    -p ssh-agent \
-    -p https://github.com/zsh-users/zsh-autosuggestions \
-    -p https://github.com/zsh-users/zsh-completions \
-    && mkdir /root/.ssh
-
-RUN apt-get -y  install ruby && gem install bundler && gem install capistrano
+RUN apt-get -y install ruby && gem install bundler && gem install capistrano
 
 
 RUN usermod -u 1000 www-data
