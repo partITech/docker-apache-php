@@ -28,7 +28,6 @@ makeVersion () {
   docker push devpartitech/php:"${PHP_VERSION}"-apache
 }
 
-#PHP_VERSIONS=(7.2 7.3 7.4 8.0 8.1 8.2 8.3)
 PHP_VERSIONS=(8.3)
 for PHP_VERSION in "${PHP_VERSIONS[@]}"
 do
